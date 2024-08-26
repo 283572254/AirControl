@@ -1,18 +1,18 @@
 #include <Arduino.h>
 
-// å®šä¹‰GPIOå¼•è„š
-const int IR_PIN = 14; // çº¢å¤–æ¥æ”¶å™¨è¿æ¥çš„GPIOå¼•è„š
-volatile unsigned long pulseWidths[100]; // å­˜å‚¨è„‰å®½çš„æ•°ç»„
+// ¶¨ÒåGPIOÒı½Å
+const int IR_PIN = 14; // ºìÍâ½ÓÊÕÆ÷Á¬½ÓµÄGPIOÒı½Å
+volatile unsigned long pulseWidths[100]; // ´æ´¢Âö¿íµÄÊı×é
 volatile int pulseIndex = 0;
 volatile bool recording = false;
 volatile unsigned long lastTime = 0;
 
 void IRAM_ATTR handleInterrupt() {
-  // GPIOä¸­æ–­æœåŠ¡ä¾‹ç¨‹ï¼Œè®°å½•è„‰å®½
+  // GPIOÖĞ¶Ï·şÎñÀı³Ì£¬¼ÇÂ¼Âö¿í
   if (recording && pulseIndex < 100) {
     unsigned long currentTime = micros();
-    pulseWidths[pulseIndex++] = currentTime - lastTime; // è®¡ç®—è„‰å®½
-    lastTime = currentTime; // æ›´æ–°ä¸Šæ¬¡è®°å½•çš„æ—¶é—´
+    pulseWidths[pulseIndex++] = currentTime - lastTime; // ¼ÆËãÂö¿í
+    lastTime = currentTime; // ¸üĞÂÉÏ´Î¼ÇÂ¼µÄÊ±¼ä
   }
 }
 
@@ -20,25 +20,25 @@ void setup() {
   Serial.begin(115200);
   pinMode(IR_PIN, INPUT);
 
-  // è®¾ç½®GPIOä¸­æ–­
+  // ÉèÖÃGPIOÖĞ¶Ï
   attachInterrupt(digitalPinToInterrupt(IR_PIN), handleInterrupt, CHANGE);
 }
 
 void loop() {
-  // æ£€æŸ¥æ˜¯å¦æœ‰æŒ‰é”®å¼€å§‹å½•åˆ¶
+  // ¼ì²éÊÇ·ñÓĞ°´¼ü¿ªÊ¼Â¼ÖÆ
   if (Serial.available()) {
     char c = Serial.read();
     if (c == 'r') {
-      // å¼€å§‹å½•åˆ¶
+      // ¿ªÊ¼Â¼ÖÆ
       Serial.println("Start recording...");
       pulseIndex = 0;
       recording = true;
-      lastTime = micros(); // åˆå§‹åŒ–æ—¶é—´æˆ³
-      delay(1000); // å½•åˆ¶1ç§’
+      lastTime = micros(); // ³õÊ¼»¯Ê±¼ä´Á
+      delay(1000); // Â¼ÖÆ1Ãë
       recording = false;
       Serial.println("Recording stopped.");
       
-      // æ‰“å°å½•åˆ¶çš„è„‰å®½æ•°æ®
+      // ´òÓ¡Â¼ÖÆµÄÂö¿íÊı¾İ
       for (int i = 0; i < pulseIndex; i++) {
         Serial.println(pulseWidths[i]);
       }
